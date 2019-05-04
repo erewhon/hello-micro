@@ -15,6 +15,9 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"io"
+	"io/ioutil"
+	"strings"
 	"time"
 
 	"net"
@@ -141,12 +144,27 @@ func (s *Server) runGWServer() error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux()
+	// Serve up the swagger.json file
+	mux := http.NewServeMux()
+	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
+		dat, err := ioutil.ReadFile("./api/hello.swagger.json")
+		if err != nil {
+			return
+		}
+		io.Copy(w, strings.NewReader(string(dat)))
+	})
+
+	gwmux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := pb.RegisterGreeterHandlerFromEndpoint(ctx, mux, viper.GetString("grpc_port"), opts)
+	err := pb.RegisterGreeterHandlerFromEndpoint(ctx, gwmux, viper.GetString("grpc_port"), opts)
 	if err != nil {
 		return err
 	}
+
+	// Serve up Swagger UI
+	fs := http.FileServer(http.Dir("./swaggerui"))
+	mux.Handle("/swaggerui/", http.StripPrefix("/swaggerui/", fs))
+	mux.Handle("/", gwmux)
 
 	s.log.Infof("Starting Gateway server on %s", addr)
 
