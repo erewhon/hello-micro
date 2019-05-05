@@ -24,5 +24,8 @@ protoc -I/usr/local/include -I. \
 protoc -I/usr/local/include -I. \
   -I$GOPATH/src \
   -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-  --swagger_out=logtostderr=true:. \
+  --swagger_out=logtostderr=true:swaggerui \
   api/hello.proto
+
+# embed swaggerui in code that will be compiled into binary
+statik -src=$(pwd)/swaggerui

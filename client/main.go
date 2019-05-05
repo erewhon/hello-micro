@@ -21,7 +21,6 @@ package main
 
 import (
 	"context"
-	"github.com/jinzhu/gorm"
 	"log"
 	"os"
 	"time"

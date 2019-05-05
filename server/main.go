@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"fmt"
+	_ "github.com/erewhon/hello-micro/statik"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -13,6 +14,7 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/jinzhu/gorm"
+	"github.com/rakyll/statik/fs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"io"
@@ -162,7 +164,12 @@ func (s *Server) runGWServer() error {
 	}
 
 	// Serve up Swagger UI
-	fs := http.FileServer(http.Dir("./swaggerui"))
+	//fs := http.FileServer(http.Dir("./swaggerui"))
+	statikFs, err := fs.New()
+	if err != nil {
+		panic(err)
+	}
+	fs := http.FileServer(statikFs)
 	mux.Handle("/swaggerui/", http.StripPrefix("/swaggerui/", fs))
 	mux.Handle("/", gwmux)
 
