@@ -17,9 +17,6 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"io"
-	"io/ioutil"
-	"strings"
 	"time"
 
 	"net"
@@ -146,15 +143,7 @@ func (s *Server) runGWServer() error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	// Serve up the swagger.json file
 	mux := http.NewServeMux()
-	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, req *http.Request) {
-		dat, err := ioutil.ReadFile("./api/hello.swagger.json")
-		if err != nil {
-			return
-		}
-		io.Copy(w, strings.NewReader(string(dat)))
-	})
 
 	gwmux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
