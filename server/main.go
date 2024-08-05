@@ -83,7 +83,10 @@ func (s *Server) Run() {
 	}()
 
 	go func() {
-		s.runGWServer()
+		err := s.runGWServer()
+		if err != nil {
+			return
+		}
 	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server with
